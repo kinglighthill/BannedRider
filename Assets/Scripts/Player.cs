@@ -4,13 +4,15 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    private CharacterController controller;
+    private Rigidbody rb;
+    public Camera cam;
+    Vector3 offset;
 
     private int desiredLane = 1;
 
 
-    public float originalSpeed = 7.0f;
-    public float speed;
+    public float speed = 700.0f;
+    public float sideSpeed = 7f;
     public float speedIncreaseLastTick;
     public float speedIncreaseTime = 2.5f;
     public float speedIncreaseAmount = 0.1f;
@@ -24,57 +26,27 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        speed = originalSpeed;
-        controller = GetComponent<CharacterController>();
-        //anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
+        offset = cam.transform.position - transform.position;
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        //if (Time.time - speedIncreaseLastTick > speedIncreaseTime)
-        //{
-        //    speedIncreaseLastTick = Time.time;
-        //    speed += speedIncreaseAmount;
-        //    //GameManager.Instance.UpdateModifier(speed - originalSpeed);
-        //}
+        Vector3 moveDir = cam.transform.forward * speed;
+        float sideMove = Input.GetAxis("Horizontal");
+        Vector3 sideDir = cam.transform.right * sideMove;
+        Vector3 movement = moveDir + sideDir;
+        rb.AddForce(moveDir);
+        rb.AddForce(sideDir, ForceMode.VelocityChange);
 
-        //if (Input.GetKeyDown(KeyCode.LeftArrow))
-        //if (MobileInput.Instance.SwipeLeft)
-            //MoveLane(false);
+        Debug.Log(sideMove);
+        Debug.Log(sideDir);
+    }
 
-
-        //if (Input.GetKeyDown(KeyCode.RightArrow))
-        //if (MobileInput.Instance.SwipeRight)
-            //MoveLane(true);
-
-        Vector3 targetPosition = transform.position.x * Vector3.forward;
-
-        //switch (desiredLane)
-        //{
-        //    case 0:
-        //        targetPosition += Vector3.left * LANE_DISTANCE;
-        //        break;
-        //    case 2:
-        //        targetPosition += Vector3.right * LANE_DISTANCE;
-        //        break;
-        //    default:
-        //        break;
-        //}
-
-        Vector3 moveVector = Vector3.zero;
-        moveVector.x = (targetPosition - transform.position).normalized.x * speed;
-
-        
-        //moveVector.z = speed;
-
-        controller.Move(moveVector * Time.deltaTime);
-
-        //Vector3 dir = controller.velocity;
-        //if (dir != Vector3.zero)
-        //{
-        //    dir.y = 0;
-        //    //transform.forward = Vector3.Lerp(transform.forward, dir, TURN_SPEED);
-        //}
+    void LateUpdate()
+    {
+        Vector3 movePosition = transform.position + offset;
+        cam.transform.position = movePosition;
     }
 }
