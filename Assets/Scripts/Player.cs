@@ -5,76 +5,142 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     private CharacterController controller;
+    private Rigidbody rb;
+    private Vector3 direction;
+    //private Vector3 moveVector;
+    //private Vector3 targetPosition;
 
-    private int desiredLane = 1;
-
-
-    public float originalSpeed = 7.0f;
-    public float speed;
-    public float speedIncreaseLastTick;
-    public float speedIncreaseTime = 2.5f;
-    public float speedIncreaseAmount = 0.1f;
-
-    //private Animator anim;
+    public float forwardSpeed;
+    private float groundLevel;
+    
+    public int desiredLane = 4;
+    public int newDesiredLane = 4;
+    public bool? isGoingRight = null;
 
     private const float LANE_DISTANCE = 2.5f;
-    private const float TURN_SPEED = 0.05f;
 
     private bool isRunning = false;
 
     void Start()
     {
-        speed = originalSpeed;
         controller = GetComponent<CharacterController>();
-        //anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
+        //moveVector = Vector3.zero;
+        //targetPosition = transform.position.x * Vector3.right;
     }
 
-    // Update is called once per frame
-    void Update()
+    //private void Update()
+    //{
+    //    direction.x = -forwardSpeed;
+
+    //    if(Input.GetKeyDown(KeyCode.LeftArrow))
+    //    //if (MobileInput.Instance.SwipeLeft)
+    //    {
+    //        isGoingRight = false;
+    //        //MoveLane(false);
+    //    }
+
+
+    //    if (Input.GetKeyDown(KeyCode.RightArrow))
+    //    //if (MobileInput.Instance.SwipeRight)
+    //    {
+    //        isGoingRight = true;
+    //        //MoveLane(true);
+    //    }
+
+    //    Vector3 targetPosition = transform.position.x * Vector3.back;
+
+    //    //if (isGoingRight.HasValue && )
+    //    //{
+    //    //    targetPosition += Vector3.forward * LANE_DISTANCE;
+    //    //}
+    //    //else
+    //    //{
+    //    //    targetPosition += Vector3.back * LANE_DISTANCE;
+    //    //}
+
+    //    switch (isGoingRight)
+    //    {
+    //        case true:
+    //            targetPosition += Vector3.forward * LANE_DISTANCE;
+    //            break;
+    //        case false:
+    //            targetPosition += Vector3.back * LANE_DISTANCE;
+    //            break;
+    //        default:
+    //            break;
+    //    }
+
+    //    //desiredLane = newDesiredLane;
+
+    //    //switch (desiredLane)
+    //    //{
+    //    //    case 0:
+    //    //        targetPosition += Vector3.back * LANE_DISTANCE;
+    //    //        break;
+    //    //    case 2:
+    //    //        targetPosition += Vector3.forward * LANE_DISTANCE;
+    //    //        break;
+    //    //    default:
+    //    //        break;
+    //    //}
+
+    //    //transform.position = targetPosition;
+
+    //    Vector3 moveVector = Vector3.zero;
+    //    //moveVector.z = targetPosition.z;
+    //    moveVector.z = (targetPosition - transform.position).normalized.z * forwardSpeed;
+
+
+    //    moveVector.x = -forwardSpeed;
+
+    //    controller.Move(moveVector * Time.deltaTime);
+
+    //    //if (transform.position.y != groundLevel)
+    //    //{
+    //    //    transform.position.y = groundLevel;
+    //    //}
+
+    //    //controller.Move(direction * Time.fixedDeltaTime);
+
+    //    //Vector3 dir = controller.velocity;
+    //    //if (dir != Vector3.zero)
+    //    //{
+    //    //    dir.y = -0.3f;
+    //    //    transform.right = Vector3.Lerp(transform.forward, dir, TURN_SPEED);
+    //    //}
+    //}
+
+    private void Update()
     {
-        //if (Time.time - speedIncreaseLastTick > speedIncreaseTime)
-        //{
-        //    speedIncreaseLastTick = Time.time;
-        //    speed += speedIncreaseAmount;
-        //    //GameManager.Instance.UpdateModifier(speed - originalSpeed);
-        //}
+        float verticalInput = Input.GetAxis("Vertical");
+        rb.AddForce(Vector3.left * forwardSpeed * verticalInput * Time.deltaTime);
+    }
 
-        //if (Input.GetKeyDown(KeyCode.LeftArrow))
-        //if (MobileInput.Instance.SwipeLeft)
-            //MoveLane(false);
+    //private void FixedUpdate()
+    //{
+    //    //controller.Move(moveVector * Time.fixedDeltaTime);
+    //    rb.AddForce(Vector3.left * forwardSpeed * Time.fixedDeltaTime);
+    //}
 
+    private void MoveLane(bool goingRight)
+    {
+        newDesiredLane = goingRight ? desiredLane + 1 : desiredLane - 1;
+        newDesiredLane = Mathf.Clamp(newDesiredLane, 0, 8);
 
-        //if (Input.GetKeyDown(KeyCode.RightArrow))
-        //if (MobileInput.Instance.SwipeRight)
-            //MoveLane(true);
+        if (newDesiredLane > desiredLane)
+        {
+            isGoingRight = true;
+        }
+        else if (newDesiredLane < desiredLane)
+        {
+            isGoingRight = false;
+        }
+        else
+        {
+            isGoingRight = null;
+        }
 
-        Vector3 targetPosition = transform.position.x * Vector3.forward;
-
-        //switch (desiredLane)
-        //{
-        //    case 0:
-        //        targetPosition += Vector3.left * LANE_DISTANCE;
-        //        break;
-        //    case 2:
-        //        targetPosition += Vector3.right * LANE_DISTANCE;
-        //        break;
-        //    default:
-        //        break;
-        //}
-
-        Vector3 moveVector = Vector3.zero;
-        moveVector.x = (targetPosition - transform.position).normalized.x * speed;
-
-        
-        //moveVector.z = speed;
-
-        controller.Move(moveVector * Time.deltaTime);
-
-        //Vector3 dir = controller.velocity;
-        //if (dir != Vector3.zero)
-        //{
-        //    dir.y = 0;
-        //    //transform.forward = Vector3.Lerp(transform.forward, dir, TURN_SPEED);
-        //}
+        desiredLane = newDesiredLane;
     }
 }
