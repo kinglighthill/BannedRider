@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
@@ -8,45 +10,115 @@ public class Player : MonoBehaviour
     public Camera cam;
     Vector3 offset;
 
-    private int desiredLane = 1;
+    public float speed;
+    public float horizontalInput;
+    public float forwardInput;
 
+    public float topSpeed = 200.0f;
+    public float translatedTopSpeed = 4.0f;
+    public float time = 5.0f;
+    public int computedTime = 0;
+    public int maxComputedTime = 2000;
+    private bool isAccelerating = false;
 
-    public float speed = 700.0f;
-    public float sideSpeed = 7f;
-    public float speedIncreaseLastTick;
-    public float speedIncreaseTime = 2.5f;
-    public float speedIncreaseAmount = 0.1f;
-
-    //private Animator anim;
-
-    private const float LANE_DISTANCE = 2.5f;
-    private const float TURN_SPEED = 0.05f;
-
-    private bool isRunning = false;
+    GameManager gameManager;
 
     void Start()
     {
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         rb = GetComponent<Rigidbody>();
         offset = cam.transform.position - transform.position;
+        speed = 0;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        Vector3 moveDir = cam.transform.forward * speed;
-        float sideMove = Input.GetAxis("Horizontal");
-        Vector3 sideDir = cam.transform.right * sideMove;
-        Vector3 movement = moveDir + sideDir;
-        rb.AddForce(moveDir);
-        rb.AddForce(sideDir, ForceMode.VelocityChange);
+        if (gameManager.IsGameActive && !gameManager.IsGameOver)
+        {
+            horizontalInput = Input.GetAxis("Horizontal");
+            forwardInput = Input.GetAxis("Vertical");
 
-        Debug.Log(sideMove);
-        Debug.Log(sideDir);
+            float computedTimeF = (float)computedTime / 100;
+
+            if (forwardInput == 0)
+            {
+                isAccelerating = false;
+            }
+            else
+            {
+                if (!isAccelerating)
+                {
+                    InvokeRepeating("ComputedTimeRoutine", 0, Time.fixedDeltaTime);
+                    isAccelerating = true;
+                }
+                speed = computedTimeF / 1000 * topSpeed;
+            }
+
+            if (computedTime > maxComputedTime)
+            {
+                computedTime = maxComputedTime;
+            }
+
+            if (computedTime < 0)
+            {
+                computedTime = 0;
+            }
+
+            Vector3 targetPos = Vector3.right * speed;
+            Vector3 targetPosLerp = Vector3.Lerp(transform.position, targetPos, time);
+
+            transform.Translate(targetPosLerp);
+
+            Vector3 sideDir = cam.transform.forward * -horizontalInput / 5;
+            transform.Translate(sideDir);
+            //rb.AddForce(sideDir, ForceMode.VelocityChange);
+
+            gameManager.Score = (int) Time.time / 10;
+        }
     }
 
     void LateUpdate()
     {
-        Vector3 movePosition = transform.position + offset;
-        cam.transform.position = movePosition;
+        if (gameManager.IsGameActive && !gameManager.IsGameOver)
+        {
+            Vector3 movePosition = transform.position + offset;
+            cam.transform.position = movePosition;
+        }
+    }
+
+    void ComputedTimeRoutine()
+    {
+        if (isAccelerating)
+        {
+            if (forwardInput > 0)
+            {
+                computedTime++;
+            }
+            else
+            {
+                computedTime--;
+            }
+        }
+    }
+
+    public void Accelerate()
+    {
+        forwardInput = 1;
+    }
+
+    public void Break()
+    {
+        forwardInput = -1;
+    }
+
+    public void Right()
+    {
+        horizontalInput = 1;
+    }
+
+    public void Left()
+    {
+        horizontalInput = -1;
     }
 }
