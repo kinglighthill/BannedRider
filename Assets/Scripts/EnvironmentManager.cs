@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +7,7 @@ public class EnvironmentManager : MonoBehaviour
 {
     public GameObject environment;
     public List<GameObject> activeEnvironments = new List<GameObject>();
-    public float zSpawn = 0;
+    public float zSpawn = 185;
     public float length;
     public int numberOfEnvironments = 2;
 
@@ -19,9 +20,10 @@ public class EnvironmentManager : MonoBehaviour
     void Start()
     {
         //length = environment.GetComponent<BoxCollider>().size.x;
+        zSpawn = 185;
         length = 190;
         SpawnEnvironment();
-        for (int i =0; i < numberOfEnvironments; i++)
+        for (int i = 0; i < numberOfEnvironments; i++)
         {
             SpawnEnvironment();
         }
@@ -33,10 +35,10 @@ public class EnvironmentManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        x = playerTransform.position.x;
+        x = playerTransform.position.z;
         z = zSpawn - (numberOfEnvironments * length);
 
-        if (Mathf.Abs(playerTransform.position.x) > (zSpawn - (numberOfEnvironments * length)))
+        if (Mathf.Abs(playerTransform.position.z) > (zSpawn - (numberOfEnvironments * length)))
         {
             SpawnEnvironment();
             DeleteEnvironment();
@@ -45,9 +47,9 @@ public class EnvironmentManager : MonoBehaviour
 
     public void SpawnEnvironment()
     {
-        GameObject gameObject = Instantiate(environment, -(transform.right * zSpawn), transform.rotation);
+        GameObject gameObject = Instantiate(environment, -(environment.transform.right * zSpawn), environment.transform.rotation);
         activeEnvironments.Add(gameObject);
-        zSpawn += length; 
+        zSpawn += length;
     }
 
     private void DeleteEnvironment()
