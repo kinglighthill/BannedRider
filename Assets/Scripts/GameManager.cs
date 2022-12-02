@@ -51,7 +51,7 @@ public class GameManager : MonoBehaviour
 
         score = coins = 0;
         target = 10;
-        gameTime = 50;
+        gameTime = 60;
 
         SetScore();
         SetCoins();
@@ -81,6 +81,8 @@ public class GameManager : MonoBehaviour
         isGameActive = true;
         mainMenuPanel.SetActive(false);
         gameDetailsPanel.SetActive(true);
+
+        score = coins = 0;
     }
 
     public void QuitGame()
@@ -117,8 +119,6 @@ public class GameManager : MonoBehaviour
 
         totalCoins += coins;
         PlayerPrefs.SetInt("Coins", totalCoins);
-
-        score = coins = 0;
     }
 
     void SetScore()

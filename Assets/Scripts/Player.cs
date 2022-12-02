@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     private Rigidbody rb;
     public Camera cam;
     Vector3 offset;
+    float initialPos;
 
     public float speed;
     public float horizontalInput;
@@ -29,6 +30,8 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         offset = cam.transform.position - transform.position;
         speed = 0;
+
+        initialPos = transform.position.z;
     }
 
     // Update is called once per frame
@@ -74,7 +77,7 @@ public class Player : MonoBehaviour
             transform.Translate(sideDir);
             //rb.AddForce(sideDir, ForceMode.VelocityChange);
 
-            gameManager.Score = (int) Time.time / 10;
+            gameManager.Score = (int) (transform.position.z - initialPos);
         }
     }
 
