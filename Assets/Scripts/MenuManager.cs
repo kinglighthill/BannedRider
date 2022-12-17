@@ -12,6 +12,7 @@ public class MenuManager : MonoBehaviour
     public AudioSource audioS;
     public Button backBtn;
     public Slider volSlide;
+
     // Start is called before the first frame update
     void Start()
     {

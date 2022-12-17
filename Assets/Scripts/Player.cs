@@ -6,7 +6,8 @@ using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
-    private Rigidbody rb;
+    private CharacterController controller;
+
     public Camera cam;
     Vector3 offset;
     float initialPos;
@@ -27,22 +28,21 @@ public class Player : MonoBehaviour
     void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        rb = GetComponent<Rigidbody>();
+        controller = GetComponent<CharacterController>();
         offset = cam.transform.position - transform.position;
         speed = 0;
 
         initialPos = transform.position.z;
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
-        if (gameManager.IsGameActive && !gameManager.IsGameOver)
+        if (gameManager.HasGameStarted)
         {
-            horizontalInput = Input.GetAxis("Horizontal");
-            forwardInput = Input.GetAxis("Vertical");
+            //horizontalInput = Input.GetAxis("Horizontal");
+            //forwardInput = Input.GetAxis("Vertical");
 
-            float computedTimeF = (float)computedTime / 100;
+            float computedTimeF = (float) computedTime;
 
             if (forwardInput == 0)
             {
@@ -55,7 +55,7 @@ public class Player : MonoBehaviour
                     InvokeRepeating("ComputedTimeRoutine", 0, Time.fixedDeltaTime);
                     isAccelerating = true;
                 }
-                speed = computedTimeF / 1000 * topSpeed;
+                speed = computedTimeF / 100000 * topSpeed;
             }
 
             if (computedTime > maxComputedTime)
@@ -68,14 +68,13 @@ public class Player : MonoBehaviour
                 computedTime = 0;
             }
 
-            Vector3 targetPos = Vector3.right * speed;
+            Vector3 targetPos = Vector3.forward * speed;
             Vector3 targetPosLerp = Vector3.Lerp(transform.position, targetPos, time);
 
-            transform.Translate(targetPosLerp);
+            Vector3 sideDir = Vector3.right * horizontalInput / 10;
+            targetPosLerp += sideDir;
 
-            Vector3 sideDir = cam.transform.forward * -horizontalInput / 5;
-            transform.Translate(sideDir);
-            //rb.AddForce(sideDir, ForceMode.VelocityChange);
+            controller.Move(targetPosLerp);
 
             gameManager.Score = (int) (transform.position.z - initialPos);
         }
@@ -83,7 +82,7 @@ public class Player : MonoBehaviour
 
     void LateUpdate()
     {
-        if (gameManager.IsGameActive && !gameManager.IsGameOver)
+        if (gameManager.HasGameStarted)
         {
             Vector3 movePosition = transform.position + offset;
             cam.transform.position = movePosition;
@@ -117,11 +116,36 @@ public class Player : MonoBehaviour
 
     public void Right()
     {
-        horizontalInput = 1;
+        horizontalInput = 0.05f;
     }
 
     public void Left()
     {
-        horizontalInput = -1;
+        horizontalInput = -0.05f;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log(collision.gameObject.tag);
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        switch (hit.gameObject.tag)
+        {
+            case "Vehicle":
+                gameManager.HitVehicle();
+                Vehicle vehicle = hit.gameObject.GetComponent<Vehicle>();
+
+                if (!vehicle.IsIncoming)
+                {
+                    computedTime = Mathf.Min(20, computedTime);
+                } else
+                {
+                    //gameManager.GameOver(false);
+                }
+
+                break;
+        }
     }
 }

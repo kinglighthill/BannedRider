@@ -7,54 +7,45 @@ public class EnvironmentManager : MonoBehaviour
 {
     public GameObject environment;
     public List<GameObject> activeEnvironments = new List<GameObject>();
-    public float zSpawn = 185;
+    public float zSpawn;
     public float length;
-    public int numberOfEnvironments = 2;
+
+    private int numberOfEnvironments;
 
     public Transform playerTransform;
 
-    public float x;
-    public float z;
+    GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
-        //length = environment.GetComponent<BoxCollider>().size.x;
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
+        numberOfEnvironments = 2;
         zSpawn = 185;
         length = 190;
-        SpawnEnvironment();
-        for (int i = 0; i < numberOfEnvironments; i++)
-        {
-            SpawnEnvironment();
-        }
-
-        x = playerTransform.position.x;
-        z = zSpawn - (numberOfEnvironments * length);
     }
 
     // Update is called once per frame
     void Update()
     {
-        x = playerTransform.position.z;
-        z = zSpawn - (numberOfEnvironments * length);
-
-        if (Mathf.Abs(playerTransform.position.z) > (zSpawn - (numberOfEnvironments * length)))
+        if (gameManager.HasGameStarted && Mathf.Abs(playerTransform.position.z) > (zSpawn - (numberOfEnvironments * length)))
         {
             SpawnEnvironment();
-            DeleteEnvironment();
         }
     }
 
-    public void SpawnEnvironment()
+    private void SpawnEnvironment()
     {
-        GameObject gameObject = Instantiate(environment, -(environment.transform.right * zSpawn), environment.transform.rotation);
-        activeEnvironments.Add(gameObject);
+        Instantiate(environment, -(environment.transform.right * zSpawn), environment.transform.rotation);
         zSpawn += length;
     }
 
-    private void DeleteEnvironment()
+    public void BatchSpawnEnvironment()
     {
-        Destroy(activeEnvironments[0]);
-        activeEnvironments.RemoveAt(0);
+        for (int i = 0; i < numberOfEnvironments; i++)
+        {
+            SpawnEnvironment();
+        }
     }
 }
